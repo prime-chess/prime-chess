@@ -61,10 +61,7 @@ function JoinFormContents(props: JoinFormProps) {
 
 export default function JoinForm(props: JoinFormProps) {
   return (
-    <div
-      className=""
-      id="join-form"
-    >
+    <div id="join-form">
       <div className="flex w-full max-w-sm flex-col gap-6 mb-2">
         <a className="flex items-center gap-2 self-center font-medium" href="#">
           <Logo size={8} />
