@@ -8,7 +8,10 @@ export default function App() {
 
   return (
     <ThemeProvider defaultTheme="dark">
-      <div id="app" className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div
+        id="app"
+        className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10"
+      >
         {!gameId && <JoinForm gameId={gameId} setGameId={setGameId} />}
       </div>
     </ThemeProvider>
