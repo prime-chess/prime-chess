@@ -13,11 +13,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": {
+      "/games/": {
         target: "http://localhost:8080",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      }
-    }
+        ws: true,
+        rewriteWsOrigin: true,
+      },
+    },
   },
 });

@@ -14,6 +14,12 @@ pub struct Board {
     pub castling_rights: CastlingRights,
 }
 
+impl Default for Board {
+    fn default() -> Self {
+        Self::try_from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string()).expect("Expected default board to be valid!")
+    }
+}
+
 impl TryFrom<String> for Board {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let parts = value.split_whitespace().collect::<Vec<&str>>();
