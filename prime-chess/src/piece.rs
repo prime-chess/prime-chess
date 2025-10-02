@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Piece {
     Pawn,
     Knight,
@@ -18,7 +19,7 @@ impl TryFrom<char> for Piece {
             'f' => Ok(Piece::PRook),
             'q' => Ok(Piece::Queen),
             'k' => Ok(Piece::King),
-            c => Err(format!("Invalid piece char: {}!", c))
+            c => Err(format!("Invalid piece char: {}!", c)),
         }
     }
 

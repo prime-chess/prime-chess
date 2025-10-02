@@ -2,7 +2,7 @@ use crate::square::Square;
 
 pub enum ChessMoveFlags {
     EnPassant(Square),
-    Promotion(Square)
+    Promotion(Square),
 }
 
 pub struct ChessMove {
