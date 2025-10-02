@@ -10,5 +10,5 @@ fn index() -> &'static str {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/games/", routes![index])
+    rocket::build().mount("/games/", routes![routes::games::host_game])
 }

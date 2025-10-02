@@ -27,10 +27,10 @@ function JoinFormContents(props: JoinFormProps) {
     props.setGameId(code);
   };
 
-  // const hostGame = async () => {
-  //     let response = fetch("/api/games/", {method: "POST"});
-  //     console.log(response);
-  // }
+  const hostGame = async () => {
+      let response = await fetch("/api/games/", {method: "POST"});
+      console.log(response.body);
+  }
 
   return (
     <div className={"flex flex-col gap-6"}>
@@ -54,7 +54,7 @@ function JoinFormContents(props: JoinFormProps) {
                 <InputOTPSlot index={3} />
               </InputOTPGroup>
             </InputOTP>
-            <Button variant={"default"} className="w-full">
+            <Button variant={"default"} className="w-full" onClick={hostGame}>
               Host
             </Button>
           </div>
