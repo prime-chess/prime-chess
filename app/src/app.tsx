@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./app.css";
 import { ThemeProvider } from "./components/theme-provider";
 import JoinForm from "./components/join-form";
 
 export default function App() {
   const [gameId, setGameId] = useState<string | undefined>(undefined);
+
+  const r = () => {
+    fetch("/api").then((r) => console.log(r.body));
+  }
+
+  useEffect(r, [])
 
   return (
     <ThemeProvider defaultTheme="dark">
