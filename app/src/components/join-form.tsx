@@ -14,6 +14,7 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "./ui/input-otp";
+import { toast } from "sonner";
 
 interface JoinFormProps {
   setGameId: Dispatch<SetStateAction<string | undefined>>;
@@ -28,8 +29,22 @@ function JoinFormContents(props: JoinFormProps) {
   };
 
   const hostGame = async () => {
-      let response = await fetch("/api/games/", {method: "POST"});
-      console.log(response.body);
+    let response = await fetch("/api/games/", { method: "POST" });
+
+    if (!response.ok) {
+      toast.error(`Recieved invalid response: ${response.statusText}`);
+      return;
+    }
+
+    let text = await response.text();
+
+    if (text.length !== 4) {
+      toast.error(`Recieved invalid response: ${text}`);
+      return;
+    }
+
+    props.setGameId(text);
+    toast.info(`Your game code is ${text}!`)
   }
 
   return (
@@ -54,7 +69,7 @@ function JoinFormContents(props: JoinFormProps) {
                 <InputOTPSlot index={3} />
               </InputOTPGroup>
             </InputOTP>
-            <Button variant={"default"} className="w-full" onClick={hostGame}>
+            <Button className="w-full" onClick={hostGame}>
               Host
             </Button>
           </div>

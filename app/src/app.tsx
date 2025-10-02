@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./app.css";
 import { ThemeProvider } from "./components/theme-provider";
 import JoinForm from "./components/join-form";
+import { Toaster } from "./components/ui/sonner";
 
 export default function App() {
   const [gameId, setGameId] = useState<string | undefined>(undefined);
@@ -14,6 +15,7 @@ export default function App() {
       >
         {!gameId && <JoinForm gameId={gameId} setGameId={setGameId} />}
       </div>
+      <Toaster />
     </ThemeProvider>
   );
 }

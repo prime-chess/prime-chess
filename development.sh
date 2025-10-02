@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export ROCKET_PORT=8080
+
 (
   cd server
   cargo watch -x run
