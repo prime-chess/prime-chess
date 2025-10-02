@@ -8,13 +8,8 @@ extern crate rocket;
 mod game;
 mod routes;
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
 #[launch]
-fn rocket() -> _ {
+async fn rocket() -> _ {
     let games: GamesMap = Arc::new(Mutex::new(HashMap::new()));
 
     rocket::build()

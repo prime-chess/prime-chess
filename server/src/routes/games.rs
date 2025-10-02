@@ -19,3 +19,6 @@ pub fn host_game(games: &State<GamesMap>) -> String {
 
     code_string
 }
+
+#[get("/connect/<code>")]
+async fn connect(code: u32, ws: rocket_ws::WebSocket) {}
