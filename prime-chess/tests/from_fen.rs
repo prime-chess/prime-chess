@@ -1,6 +1,11 @@
 #[cfg(test)]
 mod from_fen_test {
-    use prime_chess::{Color, board::Board, piece::Piece, square::Square};
+    use prime_chess::{
+        Color,
+        board::{Board, CastlingRight},
+        piece::Piece,
+        square::Square,
+    };
 
     #[test]
     fn starting_pos() {
@@ -42,8 +47,16 @@ mod from_fen_test {
             (Piece::Rook, Color::White, Square::H1),
         ];
 
-        dbg!(&board.pieces);
         assert_eq!(board.pieces.len(), expected.len());
+        assert_eq!(board.side_to_move, Color::White);
+        assert_eq!(
+            board.castling_rights,
+            [
+                [Some(CastlingRight::King), Some(CastlingRight::Queen)],
+                [Some(CastlingRight::King), Some(CastlingRight::Queen)]
+            ]
+        );
+
         for e in expected {
             assert!(
                 board.pieces.contains(&e),
