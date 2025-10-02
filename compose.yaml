@@ -13,6 +13,15 @@ services:
       NODE_ENV: production
     depends_on:
       - server
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /src/web
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
   server:
     build:
       context: ./server

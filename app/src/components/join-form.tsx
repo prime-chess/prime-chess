@@ -27,6 +27,11 @@ function JoinFormContents(props: JoinFormProps) {
     props.setGameId(code);
   };
 
+  // const hostGame = async () => {
+  //     let response = fetch("/api/games/", {method: "POST"});
+  //     console.log(response);
+  // }
+
   return (
     <div className={"flex flex-col gap-6"}>
       <Card>
