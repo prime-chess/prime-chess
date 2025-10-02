@@ -26,7 +26,7 @@ pub enum GameState {
 pub struct Game {
     pub code: String,
     pub state: GameState,
-    pub players: Vec<Player>, // This will hold Player structs eventually
+    pub players: Vec<Player>,
     pub board: Board,
 }
 

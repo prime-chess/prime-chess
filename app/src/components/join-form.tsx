@@ -1,7 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import Logo from "./logo";
 import { Button } from "./ui/button";
-// ... (other imports)
 import { toast } from "sonner";
 import {
   Card,
@@ -18,15 +17,16 @@ import {
 } from "./ui/input-otp";
 
 interface JoinFormProps {
-  setGameId: Dispatch<SetStateAction<string | undefined>>;
-  gameId: string | undefined;
+  setGameCode: Dispatch<SetStateAction<string | undefined>>;
+  gameCode: string | undefined;
+  setConnected: Dispatch<SetStateAction<boolean>>;
 }
 
 function JoinFormContents(props: JoinFormProps) {
   const handleInput = (code: string) => {
     if (code.length !== 4) return;
 
-    props.setGameId(code);
+    props.setGameCode(code);
 
     initiateWebSocket(code);
   };
@@ -42,6 +42,7 @@ function JoinFormContents(props: JoinFormProps) {
 
       ws.onopen = () => {
         toast.success(`Successfully connected to game ${code}!`);
+        props.setConnected(true);
       };
 
       ws.onmessage = (event) => {
@@ -50,11 +51,13 @@ function JoinFormContents(props: JoinFormProps) {
 
       ws.onclose = () => {
         toast.warning(`Disconnected from game ${code}.`);
+        props.setConnected(false);
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
         toast.error(`Failed to connect to game ${code}. Check console.`);
+        props.setConnected(false);
       };
     } catch (error) {
       console.error("Error creating WebSocket:", error);
@@ -70,21 +73,19 @@ function JoinFormContents(props: JoinFormProps) {
       return;
     }
 
-    let text = await response.text(); // 'text' should be the new game ID
+    let text = await response.text();
 
     if (text.length !== 4) {
       toast.error(`Recieved invalid response: ${text}`);
       return;
     }
 
-    props.setGameId(text);
+    props.setGameCode(text);
     toast.info(`Your game code is ${text}!`);
 
-    // 2. **INITIATE WEBSOCKET** (Correct method)
     initiateWebSocket(text);
   };
 
-  // ... (rest of the component remains the same)
   return (
     <div className={"flex flex-col gap-6"}>
       <Card>
@@ -127,7 +128,7 @@ export default function JoinForm(props: JoinFormProps) {
         </a>
       </div>
       <div className={"flex flex-col gap-6"}>
-        <JoinFormContents gameId={props.gameId} setGameId={props.setGameId} />
+        <JoinFormContents gameCode={props.gameCode} setGameCode={props.setGameCode} setConnected={props.setConnected}/>
       </div>
     </div>
   );
