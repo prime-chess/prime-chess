@@ -1,45 +1,66 @@
 import { useEffect, useRef, useState } from "react";
 import Logo from "./logo";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import { Card, CardHeader, CardContent } from "./ui/card";
 
 interface GameFormProps {
   gameCode: string | undefined;
+  times: [string, string];
 }
 
 interface BoardProps {
   position: string;
 }
 
-function Board(props: BoardProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [selectedSquare, setSelectedSquare] = useState<
-    [number, number] | undefined
-  >();
+function getImageUrlForPiece(piece: string): string {
+  const prefix = piece.toUpperCase() === piece ? "w" : "b";
+  return `/pieces/${prefix}${piece.toUpperCase()}.svg`;
+}
 
-  const lightColor = "#f0d9b5";
-  const darkColor = "#b58863";
-  const highlightColor = "rgba(255, 255, 0, 0.5)";
+const pieceImages: Record<string, HTMLImageElement> = {};
+function getImageForPiece(piece: string, onLoad: () => void): HTMLImageElement {
+  if (!pieceImages[piece]) {
+    const img = new Image();
+    img.src = getImageUrlForPiece(piece);
+    img.onload = onLoad;
+    pieceImages[piece] = img;
+  }
+  return pieceImages[piece];
+}
 
-  const draw = () => {
-    const canvas = canvasRef.current;
+export function Board({ position }: BoardProps) {
+  const boardRef = useRef<HTMLCanvasElement | null>(null);
+  const piecesRef = useRef<HTMLCanvasElement | null>(null);
+  const [selectedSquare, setSelectedSquare] = useState<[number, number]>();
+
+  const lightColor = "oklch(0.21 0.006 285.885)";
+  const darkColor = "oklch(0.274 0.006 286.033)";
+  const highlightColor = "rgba(245, 73, 0, 0.5)";
+
+  const ranks = position.split("/");
+
+  const resizeCanvas = (canvas: HTMLCanvasElement) => {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const size = Math.min(rect.width, rect.height);
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return size;
+  };
+
+  const drawBoard = () => {
+    const canvas = boardRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    const logicalWidth = rect.width;
-    const logicalHeight = rect.height;
-    const size = Math.min(logicalWidth, logicalHeight);
-
-    canvas.width = Math.round(size * dpr);
-    canvas.height = Math.round(size * dpr);
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, size, size);
-
+    const size = resizeCanvas(canvas);
     const cell = size / 8;
+
+    ctx.clearRect(0, 0, size, size);
 
     for (let rank = 0; rank < 8; rank++) {
       for (let file = 0; file < 8; file++) {
@@ -49,15 +70,6 @@ function Board(props: BoardProps) {
       }
     }
 
-    ctx.font = `${Math.max(10, Math.floor(cell * 0.16))}px sans-serif`;
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.textBaseline = "top";
-
-    for (let f = 0; f < 8; f++) {
-      const ch = String.fromCharCode("a".charCodeAt(0) + f);
-      ctx.fillText(ch, f * cell + 2, size - cell * 0.18 - 2);
-    }
-
     if (selectedSquare) {
       const [selRank, selFile] = selectedSquare;
       ctx.fillStyle = highlightColor;
@@ -65,28 +77,52 @@ function Board(props: BoardProps) {
     }
   };
 
-  useEffect(() => {
-    draw();
-  }, [selectedSquare]);
+  const drawPieces = () => {
+    const canvas = piecesRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const size = resizeCanvas(canvas);
+    const cell = size / 8;
+
+    ctx.clearRect(0, 0, size, size);
+
+    const expandedRanks = ranks.map((rank) =>
+      rank
+        .split("")
+        .flatMap((ch) => (/\d/.test(ch) ? Array(Number(ch)).fill(null) : ch))
+    );
+
+    for (let rank = 0; rank < 8; rank++) {
+      for (let file = 0; file < 8; file++) {
+        const piece = expandedRanks[rank][file];
+        if (piece) {
+          const img = getImageForPiece(piece, drawPieces);
+          if (img.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, file * cell, rank * cell, cell, cell);
+          }
+        }
+      }
+    }
+  };
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    drawBoard();
+    drawPieces();
 
     const ro = new ResizeObserver(() => {
-      draw();
+      drawBoard();
+      drawPieces();
     });
-    ro.observe(canvas.parentElement ?? canvas);
+    const container = boardRef.current?.parentElement;
+    if (container) ro.observe(container);
 
-    draw();
-
-    return () => {
-      ro.disconnect();
-    };
-  }, []);
+    return () => ro.disconnect();
+  }, [position, selectedSquare]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
+    const canvas = boardRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const size = Math.min(rect.width, rect.height);
@@ -95,31 +131,27 @@ function Board(props: BoardProps) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    let file = Math.floor(x / cell);
-    let rank = Math.floor(y / cell);
-
-    file = Math.max(0, Math.min(7, file));
-    rank = Math.max(0, Math.min(7, rank));
+    const file = Math.max(0, Math.min(7, Math.floor(x / cell)));
+    const rank = Math.max(0, Math.min(7, Math.floor(y / cell)));
 
     setSelectedSquare([rank, file]);
   };
 
   return (
-    <div className="w-full h-full rounded-md">
+    <div className="w-full h-full relative rounded-md">
       <canvas
-        ref={canvasRef}
+        ref={boardRef}
         onClick={handleClick}
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "block",
-          touchAction: "manipulation",
-        }}  
-        className="rounded-md"
+        className="absolute top-0 left-0 w-full h-full rounded-md"
+      />
+      <canvas
+        ref={piecesRef}
+        className="absolute top-0 left-0 w-full h-full rounded-md pointer-events-none"
       />
     </div>
   );
 }
+
 
 function GameContents(props: GameFormProps) {
   return (
@@ -131,7 +163,7 @@ function GameContents(props: GameFormProps) {
         <CardContent className="flex flex-row gap-6 w-full h-full">
           <Card className="grow"></Card>
           <Card className="h-full aspect-square m-0 p-0 shrink">
-            <Board position={""} />
+            <Board position={"cnbqkbnc/pppppppp/8/8/8/8/PPPPPPPP/CNBQKBNC"} />
           </Card>
           <Card className="grow"></Card>
         </CardContent>
@@ -144,7 +176,7 @@ export default function Game(props: GameFormProps) {
   return (
     <div id="game" className="w-full h-full rounded-none">
       <div className={"flex flex-col gap-6 w-full h-full"}>
-        <GameContents gameCode={props.gameCode} />
+        <GameContents gameCode={props.gameCode} times={props.times} />
       </div>
     </div>
   );
