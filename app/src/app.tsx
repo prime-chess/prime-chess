@@ -16,7 +16,7 @@ export default function App() {
         className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10"
       >
         {!connected && <JoinForm gameCode={gameCode} setGameCode={setGameCode} setConnected={setConnected}/>}
-        {connected && <Game gameCode={gameCode} times={["10:00", "10:00"]}/>}
+        {connected && <Game gameCode={gameCode} times={["10:00", "10:00"]} decrementingTimer={0}/>}
       </div>
       <Toaster />
     </ThemeProvider>
